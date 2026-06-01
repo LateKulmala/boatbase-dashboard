@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   "https://xzzptcztfcoolwyiudja.supabase.co",
-  "sb_publishable_xK_coX_CaU1eQkDj63d0bw_o6jdb"
+  "sb_publishable_xK_coX_CaU1eQkDj63d0bw_o6jdbTkF"
 );
 
 const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_KEY;
