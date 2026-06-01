@@ -6,7 +6,6 @@ const supabase = createClient(
   "sb_publishable_xK_coX_CaU1eQkDj63d0bw_o6jdbTkF"
 );
 
-const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_KEY;
 const PASSWORD = "boatbase2026";
 
 const agents = [
@@ -60,22 +59,17 @@ export default function App() {
     setChatLoading(true);
 
     try {
-      const response = await fetch("https://api.anthropic.com/v1/messages", {
+      const response = await fetch("/api/chat", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
-          "anthropic-dangerous-direct-browser-access": "true"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           model: "claude-sonnet-4-20250514",
           max_tokens: 1000,
           system: `Olet JARVIS, BoatBase.fi:n AI-assistentti ja toimintajohtaja. 
 BoatBase on suomalainen venemarkkinapaikka.
-Tiedät että järjestelmässä on nämä agentit: WRITER (artikkelit klo 7), REPORTER (uutiset klo 14:30), HUNTER (partnerihankinta klo 10), GUARDIAN (monitorointi), HERMES (asiakaspalvelu), SHIELD (tietoturva).
-Tällä hetkellä on ${articles.length} artikkelia, ${contacts.length} kontaktoitua partneria ja ${messages.length} asiakaspalveluviestiä.
-Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti.`,
+Agentit: WRITER (artikkelit klo 7), REPORTER (uutiset klo 14:30), HUNTER (partnerihankinta klo 10), GUARDIAN (monitorointi 8h välein), HERMES (asiakaspalvelu 24/7), SHIELD (tietoturva viikoittain).
+Tilanne: ${articles.length} artikkelia, ${contacts.length} kontaktoitua partneria, ${messages.length} asiakaspalveluviestiä.
+Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti. Ei emojeja liikaa.`,
           messages: newHistory
         })
       });
@@ -84,7 +78,7 @@ Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti.`,
       const reply = data.content?.[0]?.text || "Virhe — yritä uudelleen.";
       setChatHistory([...newHistory, { role: "assistant", content: reply }]);
     } catch (e) {
-      setChatHistory([...newHistory, { role: "assistant", content: "Yhteysvirhe — tarkista internet." }]);
+      setChatHistory([...newHistory, { role: "assistant", content: "Yhteysvirhe — yritä uudelleen." }]);
     }
     setChatLoading(false);
   }
@@ -250,10 +244,7 @@ Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti.`,
             {chatHistory.map((msg, i) => (
               <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
                 <div style={{
-                  maxWidth: "80%",
-                  padding: "10px 14px",
-                  borderRadius: "8px",
-                  fontSize: "13px",
+                  maxWidth: "80%", padding: "10px 14px", borderRadius: "8px", fontSize: "13px",
                   background: msg.role === "user" ? "#00ccff22" : "#00ff8811",
                   border: `1px solid ${msg.role === "user" ? "#00ccff44" : "#00ff8844"}`,
                   color: msg.role === "user" ? "#00ccff" : "#00ff88",
@@ -280,11 +271,7 @@ Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti.`,
               onKeyDown={e => e.key === "Enter" && sendMessage()}
               style={{ flex: 1, padding: "10px", background: "#050d1a", border: "1px solid #00ff8844", borderRadius: "6px", color: "#e0f0ff", fontFamily: "monospace", fontSize: "13px" }}
             />
-            <button
-              onClick={sendMessage}
-              disabled={chatLoading}
-              style={{ padding: "10px 20px", background: "#00ff8822", border: "1px solid #00ff88", borderRadius: "6px", color: "#00ff88", fontFamily: "monospace", fontSize: "13px", cursor: "pointer" }}
-            >
+            <button onClick={sendMessage} disabled={chatLoading} style={{ padding: "10px 20px", background: "#00ff8822", border: "1px solid #00ff88", borderRadius: "6px", color: "#00ff88", fontFamily: "monospace", fontSize: "13px", cursor: "pointer" }}>
               LÄHETÄ
             </button>
           </div>
@@ -292,7 +279,7 @@ Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti.`,
       )}
 
       <div style={{ marginTop: "24px", textAlign: "center", fontSize: "10px", color: "#1a3a5a", letterSpacing: "2px" }}>
-        BOATBASE JARVIS v3.0 · HELSINKI, FINLAND · POWERED BY CLAUDE SONNET 4.6
+        BOATBASE JARVIS v4.0 · HELSINKI, FINLAND · POWERED BY CLAUDE SONNET 4.6
       </div>
     </div>
   );
