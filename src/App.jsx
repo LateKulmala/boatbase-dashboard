@@ -3,9 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
   "https://xzzptcztfcoolwyiudja.supabase.co",
-  "sb_publishable_xK_coX_CaU1eQkDj63d0bw_o6jdbTkF"
+  "sb_publishable_xK_coX_CaU1eQkDj63d0bw_o6jdb"
 );
 
+const ANTHROPIC_KEY = "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";
 const PASSWORD = "boatbase2026";
 
 const agents = [
@@ -30,6 +31,9 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(new Date());
   const [activeTab, setActiveTab] = useState("overview");
+  const [inputMsg, setInputMsg] = useState("");
+  const [chatHistory, setChatHistory] = useState([]);
+  const [chatLoading, setChatLoading] = useState(false);
 
   useEffect(() => {
     if (loggedIn) fetchData();
@@ -45,6 +49,44 @@ export default function App() {
     setContacts(conts || []);
     setMessages(msgs || []);
     setLoading(false);
+  }
+
+  async function sendMessage() {
+    if (!inputMsg.trim() || chatLoading) return;
+    const userMsg = inputMsg;
+    setInputMsg("");
+    const newHistory = [...chatHistory, { role: "user", content: userMsg }];
+    setChatHistory(newHistory);
+    setChatLoading(true);
+
+    try {
+      const response = await fetch("https://api.anthropic.com/v1/messages", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": ANTHROPIC_KEY,
+          "anthropic-version": "2023-06-01",
+          "anthropic-dangerous-direct-browser-access": "true"
+        },
+        body: JSON.stringify({
+          model: "claude-sonnet-4-20250514",
+          max_tokens: 1000,
+          system: `Olet JARVIS, BoatBase.fi:n AI-assistentti ja toimintajohtaja. 
+BoatBase on suomalainen venemarkkinapaikka.
+Tiedät että järjestelmässä on nämä agentit: WRITER (artikkelit klo 7), REPORTER (uutiset klo 14:30), HUNTER (partnerihankinta klo 10), GUARDIAN (monitorointi), HERMES (asiakaspalvelu), SHIELD (tietoturva).
+Tällä hetkellä on ${articles.length} artikkelia, ${contacts.length} kontaktoitua partneria ja ${messages.length} asiakaspalveluviestiä.
+Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti.`,
+          messages: newHistory
+        })
+      });
+
+      const data = await response.json();
+      const reply = data.content?.[0]?.text || "Virhe — yritä uudelleen.";
+      setChatHistory([...newHistory, { role: "assistant", content: reply }]);
+    } catch (e) {
+      setChatHistory([...newHistory, { role: "assistant", content: "Yhteysvirhe — tarkista internet." }]);
+    }
+    setChatLoading(false);
   }
 
   function handleLogin() {
@@ -71,10 +113,7 @@ export default function App() {
             style={{ width: "100%", padding: "12px", background: "#050d1a", border: "1px solid #00ccff44", borderRadius: "6px", color: "#e0f0ff", fontFamily: "monospace", fontSize: "14px", marginBottom: "12px", boxSizing: "border-box" }}
           />
           {error && <p style={{ color: "#ff4444", fontSize: "12px", marginBottom: "12px" }}>{error}</p>}
-          <button
-            onClick={handleLogin}
-            style={{ width: "100%", padding: "12px", background: "#00ccff22", border: "1px solid #00ccff", borderRadius: "6px", color: "#00ccff", fontFamily: "monospace", fontSize: "14px", cursor: "pointer", letterSpacing: "2px" }}
-          >
+          <button onClick={handleLogin} style={{ width: "100%", padding: "12px", background: "#00ccff22", border: "1px solid #00ccff", borderRadius: "6px", color: "#00ccff", fontFamily: "monospace", fontSize: "14px", cursor: "pointer", letterSpacing: "2px" }}>
             KIRJAUDU
           </button>
         </div>
@@ -85,7 +124,6 @@ export default function App() {
   return (
     <div style={{ minHeight: "100vh", background: "#050d1a", color: "#e0f0ff", fontFamily: "monospace", padding: "24px" }}>
 
-      {/* Header */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px", borderBottom: "1px solid #0a2a4a", paddingBottom: "16px" }}>
         <div>
           <h1 style={{ margin: 0, fontSize: "24px", color: "#00ccff", letterSpacing: "4px" }}>⚡ BOATBASE J.A.R.V.I.S.</h1>
@@ -98,11 +136,10 @@ export default function App() {
         </div>
       </div>
 
-      {/* Stats */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "12px", marginBottom: "24px" }}>
         {[
           { label: "ARTIKKELIT", value: articles.length, color: "#cc44ff", icon: "📝" },
-          { label: "PARTNERIT KONTAKTOITU", value: contacts.length, color: "#ff9900", icon: "🎯" },
+          { label: "PARTNERIT", value: contacts.length, color: "#ff9900", icon: "🎯" },
           { label: "ASIAKASVIESTIT", value: messages.length, color: "#00ccff", icon: "📧" },
           { label: "AGENTIT LIVE", value: agents.filter(a => a.status === "online").length, color: "#00ff88", icon: "🤖" },
         ].map((stat) => (
@@ -114,7 +151,6 @@ export default function App() {
         ))}
       </div>
 
-      {/* Agents */}
       <div style={{ marginBottom: "24px" }}>
         <h2 style={{ color: "#00ccff", fontSize: "13px", letterSpacing: "3px", marginBottom: "12px" }}>⬡ AGENTTIJÄRJESTELMÄ</h2>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
@@ -131,12 +167,12 @@ export default function App() {
         </div>
       </div>
 
-      {/* Tabs */}
       <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
         {[
           { id: "overview", label: "📝 ARTIKKELIT" },
           { id: "contacts", label: "🎯 CRM" },
           { id: "messages", label: "📧 ASIAKASPALVELU" },
+          { id: "chat", label: "💬 JARVIS CHAT" },
         ].map(tab => (
           <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ padding: "8px 16px", background: activeTab === tab.id ? "#00ccff22" : "#0a1a2e", border: `1px solid ${activeTab === tab.id ? "#00ccff" : "#0a2a4a"}`, borderRadius: "6px", color: activeTab === tab.id ? "#00ccff" : "#4488aa", fontFamily: "monospace", fontSize: "11px", cursor: "pointer", letterSpacing: "1px" }}>
             {tab.label}
@@ -144,14 +180,13 @@ export default function App() {
         ))}
       </div>
 
-      {/* Articles Tab */}
       {activeTab === "overview" && (
         <div style={{ background: "#0a1a2e", borderRadius: "8px", border: "1px solid #cc44ff33", overflow: "hidden" }}>
           {loading ? <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>Ladataan...</div> :
             articles.slice(0, 10).map((article, i) => (
               <div key={article.id} style={{ padding: "12px 16px", borderBottom: i < 9 ? "1px solid #0a2a4a" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <div>
-                  <div style={{ fontSize: "13px", color: "#e0f0ff" }}>{article.title?.substring(0, 50)}...</div>
+                  <div style={{ fontSize: "13px", color: "#e0f0ff" }}>{article.title?.substring(0, 60)}...</div>
                   <div style={{ fontSize: "10px", color: "#4488aa", marginTop: "2px" }}>{article.category} · {article.read_minutes} min</div>
                 </div>
                 <div style={{ fontSize: "10px", color: "#cc44ff" }}>{new Date(article.created_at).toLocaleDateString("fi-FI")}</div>
@@ -161,12 +196,11 @@ export default function App() {
         </div>
       )}
 
-      {/* Contacts Tab */}
       {activeTab === "contacts" && (
         <div style={{ background: "#0a1a2e", borderRadius: "8px", border: "1px solid #ff990033", overflow: "hidden" }}>
           {loading ? <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>Ladataan...</div> :
             contacts.length === 0 ?
-              <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>Ei kontakteja vielä — HUNTER ajaa klo 10:00</div> :
+              <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>Ei kontakteja — HUNTER ajaa klo 10:00</div> :
               contacts.map((contact, i) => (
                 <div key={contact.id} style={{ padding: "12px 16px", borderBottom: i < contacts.length - 1 ? "1px solid #0a2a4a" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
@@ -180,7 +214,6 @@ export default function App() {
         </div>
       )}
 
-      {/* Messages Tab */}
       {activeTab === "messages" && (
         <div style={{ background: "#0a1a2e", borderRadius: "8px", border: "1px solid #00ccff33", overflow: "hidden" }}>
           {loading ? <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>Ladataan...</div> :
@@ -203,8 +236,63 @@ export default function App() {
         </div>
       )}
 
+      {activeTab === "chat" && (
+        <div style={{ background: "#0a1a2e", borderRadius: "8px", border: "1px solid #00ff8833", display: "flex", flexDirection: "column", height: "500px" }}>
+          <div style={{ padding: "12px 16px", borderBottom: "1px solid #0a2a4a", fontSize: "12px", color: "#00ff88", letterSpacing: "2px" }}>
+            ⚡ JARVIS — BoatBase AI Assistentti
+          </div>
+          <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+            {chatHistory.length === 0 && (
+              <div style={{ textAlign: "center", color: "#4488aa", fontSize: "12px", marginTop: "40px" }}>
+                Hei! Olen JARVIS. Kysy mitä tahansa BoatBasesta.
+              </div>
+            )}
+            {chatHistory.map((msg, i) => (
+              <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
+                <div style={{
+                  maxWidth: "80%",
+                  padding: "10px 14px",
+                  borderRadius: "8px",
+                  fontSize: "13px",
+                  background: msg.role === "user" ? "#00ccff22" : "#00ff8811",
+                  border: `1px solid ${msg.role === "user" ? "#00ccff44" : "#00ff8844"}`,
+                  color: msg.role === "user" ? "#00ccff" : "#00ff88",
+                  whiteSpace: "pre-wrap"
+                }}>
+                  {msg.content}
+                </div>
+              </div>
+            ))}
+            {chatLoading && (
+              <div style={{ display: "flex", justifyContent: "flex-start" }}>
+                <div style={{ padding: "10px 14px", borderRadius: "8px", fontSize: "13px", background: "#00ff8811", border: "1px solid #00ff8844", color: "#00ff88" }}>
+                  JARVIS ajattelee...
+                </div>
+              </div>
+            )}
+          </div>
+          <div style={{ padding: "12px 16px", borderTop: "1px solid #0a2a4a", display: "flex", gap: "8px" }}>
+            <input
+              type="text"
+              placeholder="Kirjoita Jarvisille..."
+              value={inputMsg}
+              onChange={e => setInputMsg(e.target.value)}
+              onKeyDown={e => e.key === "Enter" && sendMessage()}
+              style={{ flex: 1, padding: "10px", background: "#050d1a", border: "1px solid #00ff8844", borderRadius: "6px", color: "#e0f0ff", fontFamily: "monospace", fontSize: "13px" }}
+            />
+            <button
+              onClick={sendMessage}
+              disabled={chatLoading}
+              style={{ padding: "10px 20px", background: "#00ff8822", border: "1px solid #00ff88", borderRadius: "6px", color: "#00ff88", fontFamily: "monospace", fontSize: "13px", cursor: "pointer" }}
+            >
+              LÄHETÄ
+            </button>
+          </div>
+        </div>
+      )}
+
       <div style={{ marginTop: "24px", textAlign: "center", fontSize: "10px", color: "#1a3a5a", letterSpacing: "2px" }}>
-        BOATBASE JARVIS v2.0 · HELSINKI, FINLAND · POWERED BY CLAUDE SONNET 4.6
+        BOATBASE JARVIS v3.0 · HELSINKI, FINLAND · POWERED BY CLAUDE SONNET 4.6
       </div>
     </div>
   );
