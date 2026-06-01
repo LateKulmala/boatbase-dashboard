@@ -200,7 +200,7 @@ export default function App() {
           <h2 style={{ color: "#00ff88", letterSpacing: "3px", marginBottom: "8px", fontSize: "18px" }}>JARVIS CHAT</h2>
           <p style={{ color: "#4488aa", fontSize: "12px", marginBottom: "32px", letterSpacing: "1px" }}>Avaa JARVIS AI-assistentti uudessa ikkunassa</p>
           <a
-            href="http://204.168.129.61:5678/chat"
+            href="http://204.168.129.61:5678"
             target="_blank"
             rel="noreferrer"
             style={{ padding: "14px 40px", background: "#00ff8822", border: "1px solid #00ff88", borderRadius: "6px", color: "#00ff88", fontFamily: "monospace", fontSize: "14px", textDecoration: "none", letterSpacing: "2px" }}
