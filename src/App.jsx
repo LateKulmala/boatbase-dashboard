@@ -30,9 +30,6 @@ export default function App() {
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(new Date());
   const [activeTab, setActiveTab] = useState("overview");
-  const [inputMsg, setInputMsg] = useState("");
-  const [chatHistory, setChatHistory] = useState([]);
-  const [chatLoading, setChatLoading] = useState(false);
 
   useEffect(() => {
     if (loggedIn) fetchData();
@@ -48,39 +45,6 @@ export default function App() {
     setContacts(conts || []);
     setMessages(msgs || []);
     setLoading(false);
-  }
-
-  async function sendMessage() {
-    if (!inputMsg.trim() || chatLoading) return;
-    const userMsg = inputMsg;
-    setInputMsg("");
-    const newHistory = [...chatHistory, { role: "user", content: userMsg }];
-    setChatHistory(newHistory);
-    setChatLoading(true);
-
-    try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 1000,
-          system: `Olet JARVIS, BoatBase.fi:n AI-assistentti ja toimintajohtaja. 
-BoatBase on suomalainen venemarkkinapaikka.
-Agentit: WRITER (artikkelit klo 7), REPORTER (uutiset klo 14:30), HUNTER (partnerihankinta klo 10), GUARDIAN (monitorointi 8h välein), HERMES (asiakaspalvelu 24/7), SHIELD (tietoturva viikoittain).
-Tilanne: ${articles.length} artikkelia, ${contacts.length} kontaktoitua partneria, ${messages.length} asiakaspalveluviestiä.
-Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti. Ei emojeja liikaa.`,
-          messages: newHistory
-        })
-      });
-
-      const data = await response.json();
-      const reply = data.content?.[0]?.text || "Virhe — yritä uudelleen.";
-      setChatHistory([...newHistory, { role: "assistant", content: reply }]);
-    } catch (e) {
-      setChatHistory([...newHistory, { role: "assistant", content: "Yhteysvirhe — yritä uudelleen." }]);
-    }
-    setChatLoading(false);
   }
 
   function handleLogin() {
@@ -231,55 +195,23 @@ Vastaa suomeksi, lyhyesti ja toimintaorientoituneesti. Ei emojeja liikaa.`,
       )}
 
       {activeTab === "chat" && (
-        <div style={{ background: "#0a1a2e", borderRadius: "8px", border: "1px solid #00ff8833", display: "flex", flexDirection: "column", height: "500px" }}>
-          <div style={{ padding: "12px 16px", borderBottom: "1px solid #0a2a4a", fontSize: "12px", color: "#00ff88", letterSpacing: "2px" }}>
-            ⚡ JARVIS — BoatBase AI Assistentti
-          </div>
-          <div style={{ flex: 1, overflowY: "auto", padding: "16px", display: "flex", flexDirection: "column", gap: "12px" }}>
-            {chatHistory.length === 0 && (
-              <div style={{ textAlign: "center", color: "#4488aa", fontSize: "12px", marginTop: "40px" }}>
-                Hei! Olen JARVIS. Kysy mitä tahansa BoatBasesta.
-              </div>
-            )}
-            {chatHistory.map((msg, i) => (
-              <div key={i} style={{ display: "flex", justifyContent: msg.role === "user" ? "flex-end" : "flex-start" }}>
-                <div style={{
-                  maxWidth: "80%", padding: "10px 14px", borderRadius: "8px", fontSize: "13px",
-                  background: msg.role === "user" ? "#00ccff22" : "#00ff8811",
-                  border: `1px solid ${msg.role === "user" ? "#00ccff44" : "#00ff8844"}`,
-                  color: msg.role === "user" ? "#00ccff" : "#00ff88",
-                  whiteSpace: "pre-wrap"
-                }}>
-                  {msg.content}
-                </div>
-              </div>
-            ))}
-            {chatLoading && (
-              <div style={{ display: "flex", justifyContent: "flex-start" }}>
-                <div style={{ padding: "10px 14px", borderRadius: "8px", fontSize: "13px", background: "#00ff8811", border: "1px solid #00ff8844", color: "#00ff88" }}>
-                  JARVIS ajattelee...
-                </div>
-              </div>
-            )}
-          </div>
-          <div style={{ padding: "12px 16px", borderTop: "1px solid #0a2a4a", display: "flex", gap: "8px" }}>
-            <input
-              type="text"
-              placeholder="Kirjoita Jarvisille..."
-              value={inputMsg}
-              onChange={e => setInputMsg(e.target.value)}
-              onKeyDown={e => e.key === "Enter" && sendMessage()}
-              style={{ flex: 1, padding: "10px", background: "#050d1a", border: "1px solid #00ff8844", borderRadius: "6px", color: "#e0f0ff", fontFamily: "monospace", fontSize: "13px" }}
-            />
-            <button onClick={sendMessage} disabled={chatLoading} style={{ padding: "10px 20px", background: "#00ff8822", border: "1px solid #00ff88", borderRadius: "6px", color: "#00ff88", fontFamily: "monospace", fontSize: "13px", cursor: "pointer" }}>
-              LÄHETÄ
-            </button>
-          </div>
+        <div style={{ background: "#0a1a2e", borderRadius: "8px", border: "1px solid #00ff8833", padding: "60px 40px", textAlign: "center" }}>
+          <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚡</div>
+          <h2 style={{ color: "#00ff88", letterSpacing: "3px", marginBottom: "8px", fontSize: "18px" }}>JARVIS CHAT</h2>
+          <p style={{ color: "#4488aa", fontSize: "12px", marginBottom: "32px", letterSpacing: "1px" }}>Avaa JARVIS AI-assistentti uudessa ikkunassa</p>
+          <a
+            href="http://204.168.129.61:5678/chat"
+            target="_blank"
+            rel="noreferrer"
+            style={{ padding: "14px 40px", background: "#00ff8822", border: "1px solid #00ff88", borderRadius: "6px", color: "#00ff88", fontFamily: "monospace", fontSize: "14px", textDecoration: "none", letterSpacing: "2px" }}
+          >
+            AVAA JARVIS →
+          </a>
         </div>
       )}
 
       <div style={{ marginTop: "24px", textAlign: "center", fontSize: "10px", color: "#1a3a5a", letterSpacing: "2px" }}>
-        BOATBASE JARVIS v4.0 · HELSINKI, FINLAND · POWERED BY CLAUDE SONNET 4.6
+        BOATBASE JARVIS v5.0 · HELSINKI, FINLAND · POWERED BY CLAUDE SONNET 4.6
       </div>
     </div>
   );
