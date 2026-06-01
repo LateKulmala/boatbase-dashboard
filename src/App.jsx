@@ -6,7 +6,7 @@ const supabase = createClient(
   "sb_publishable_xK_coX_CaU1eQkDj63d0bw_o6jdb"
 );
 
-const ANTHROPIC_KEY = "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";
+const ANTHROPIC_KEY = import.meta.env.VITE_ANTHROPIC_KEY;
 const PASSWORD = "boatbase2026";
 
 const agents = [
