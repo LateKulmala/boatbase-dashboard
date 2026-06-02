@@ -39,8 +39,8 @@ export default function App() {
 
   async function fetchData() {
     const { data: arts } = await supabase.from("articles").select("*").order("created_at", { ascending: false });
-    const { data: conts } = await supabase.from("hunter_contacts").select("*").order("created_at", { ascending: false });
-    const { data: msgs } = await supabase.from("hermes_messages").select("*").order("created_at", { ascending: false });
+    const { data: conts } = await supabase.from("prospects").select("*").order("created_at", { ascending: false });
+    const { data: msgs } = await supabase.from("pending_responses").select("*").order("created_at", { ascending: false });
     setArticles(arts || []);
     setContacts(conts || []);
     setMessages(msgs || []);
@@ -158,12 +158,12 @@ export default function App() {
         <div style={{ background: "#0a1a2e", borderRadius: "8px", border: "1px solid #ff990033", overflow: "hidden" }}>
           {loading ? <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>Ladataan...</div> :
             contacts.length === 0 ?
-              <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>Ei kontakteja — HUNTER ajaa klo 10:00</div> :
+              <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>Ei kontakteja — HUNTER ajaa klo 10:15 ja 14:20</div> :
               contacts.map((contact, i) => (
                 <div key={contact.id} style={{ padding: "12px 16px", borderBottom: i < contacts.length - 1 ? "1px solid #0a2a4a" : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
-                    <div style={{ fontSize: "13px", color: "#e0f0ff" }}>{contact.yritys_nimi || "—"}</div>
-                    <div style={{ fontSize: "10px", color: "#4488aa", marginTop: "2px" }}>{contact.email} · {contact.tyyppi}</div>
+                    <div style={{ fontSize: "13px", color: "#e0f0ff" }}>{contact.yritys || "—"}</div>
+                    <div style={{ fontSize: "10px", color: "#4488aa", marginTop: "2px" }}>{contact.email} · {contact.tyyppi} · {contact.sijainti}</div>
                   </div>
                   <div style={{ fontSize: "10px", padding: "2px 8px", borderRadius: "4px", background: "#ff990022", color: "#ff9900" }}>{contact.status}</div>
                 </div>
@@ -186,21 +186,22 @@ export default function App() {
                   <div style={{ fontSize: "12px", color: "#e0f0ff", marginBottom: "4px" }}>📨 {msg.subject}</div>
                   <div style={{ fontSize: "11px", color: "#4488aa", marginBottom: "8px" }}>{msg.message?.substring(0, 100)}...</div>
                   <div style={{ fontSize: "11px", color: "#00ff88", background: "#00ff8811", padding: "8px", borderRadius: "4px", borderLeft: "2px solid #00ff88" }}>
-                    🤖 {msg.response?.substring(0, 150)}...
+                    🤖 {msg.draft?.substring(0, 150)}...
                   </div>
+                  <div style={{ fontSize: "10px", color: "#4488aa", marginTop: "6px" }}>Status: {msg.status}</div>
                 </div>
               ))
           }
         </div>
       )}
 
-      {activeTab === "chat" && (
+   {activeTab === "chat" && (
         <div style={{ background: "#0a1a2e", borderRadius: "8px", border: "1px solid #00ff8833", padding: "60px 40px", textAlign: "center" }}>
           <div style={{ fontSize: "48px", marginBottom: "16px" }}>⚡</div>
           <h2 style={{ color: "#00ff88", letterSpacing: "3px", marginBottom: "8px", fontSize: "18px" }}>JARVIS CHAT</h2>
           <p style={{ color: "#4488aa", fontSize: "12px", marginBottom: "32px", letterSpacing: "1px" }}>Avaa JARVIS AI-assistentti uudessa ikkunassa</p>
           <a
-            href="http://204.168.129.61:5678"
+            href="https://n8n.boatbase.fi"
             target="_blank"
             rel="noreferrer"
             style={{ padding: "14px 40px", background: "#00ff8822", border: "1px solid #00ff88", borderRadius: "6px", color: "#00ff88", fontFamily: "monospace", fontSize: "14px", textDecoration: "none", letterSpacing: "2px" }}
@@ -209,10 +210,3 @@ export default function App() {
           </a>
         </div>
       )}
-
-      <div style={{ marginTop: "24px", textAlign: "center", fontSize: "10px", color: "#1a3a5a", letterSpacing: "2px" }}>
-        BOATBASE JARVIS v5.0 · HELSINKI, FINLAND · POWERED BY CLAUDE SONNET 4.6
-      </div>
-    </div>
-  );
-}
