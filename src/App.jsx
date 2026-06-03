@@ -20,6 +20,18 @@ const agents = [
   { name: "SOCIAL", role: "Somemanageri", status: "building", color: "#ffcc00" },
 ];
 
+const agentColors = {
+  JARVIS: "#00ff88",
+  SCOUT: "#00ccff",
+  HUNTER: "#ff9900",
+  WRITER: "#cc44ff",
+  REPORTER: "#ff44aa",
+  GUARDIAN: "#00ff88",
+  HERMES: "#00ccff",
+  SHIELD: "#ffcc00",
+  SOCIAL: "#ffcc00",
+};
+
 export default function App() {
   const [loggedIn, setLoggedIn] = useState(false);
   const [password, setPassword] = useState("");
@@ -27,12 +39,21 @@ export default function App() {
   const [articles, setArticles] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(new Date());
   const [activeTab, setActiveTab] = useState("overview");
 
   useEffect(() => {
-    if (loggedIn) fetchData();
+    if (loggedIn) {
+      fetchData();
+      const refreshTimer = setInterval(fetchData, 30000);
+      const clockTimer = setInterval(() => setTime(new Date()), 1000);
+      return () => {
+        clearInterval(refreshTimer);
+        clearInterval(clockTimer);
+      };
+    }
     const timer = setInterval(() => setTime(new Date()), 1000);
     return () => clearInterval(timer);
   }, [loggedIn]);
@@ -50,9 +71,15 @@ export default function App() {
       .from("pending_responses")
       .select("*")
       .order("created_at", { ascending: false });
+    const { data: logsData } = await supabase
+      .from("agent_logs")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
     setArticles(arts || []);
     setContacts(conts || []);
     setMessages(msgs || []);
+    setLogs(logsData || []);
     setLoading(false);
   }
 
@@ -65,6 +92,11 @@ export default function App() {
     }
   }
 
+  const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+  const recentErrors = logs.filter(
+    (l) => l.status === "error" && new Date(l.created_at) > oneDayAgo
+  );
+
   if (!loggedIn) {
     return (
       <div
@@ -75,6 +107,7 @@ export default function App() {
           alignItems: "center",
           justifyContent: "center",
           fontFamily: "monospace",
+          padding: "16px",
         }}
       >
         <div
@@ -83,7 +116,8 @@ export default function App() {
             border: "1px solid #00ccff33",
             borderRadius: "12px",
             padding: "40px",
-            width: "320px",
+            width: "100%",
+            maxWidth: "320px",
             textAlign: "center",
           }}
         >
@@ -158,9 +192,9 @@ export default function App() {
     { label: "PARTNERIT", value: contacts.length, color: "#ff9900" },
     { label: "ASIAKASVIESTIT", value: messages.length, color: "#00ccff" },
     {
-      label: "AGENTIT LIVE",
-      value: agents.filter((a) => a.status === "online").length,
-      color: "#00ff88",
+      label: "VIRHEET 24H",
+      value: recentErrors.length,
+      color: recentErrors.length > 0 ? "#ff4444" : "#00ff88",
     },
   ];
 
@@ -168,6 +202,7 @@ export default function App() {
     { id: "overview", label: "ARTIKKELIT" },
     { id: "contacts", label: "CRM" },
     { id: "messages", label: "ASIAKASPALVELU" },
+    { id: "logs", label: "LOKIT" },
     { id: "chat", label: "JARVIS CHAT" },
   ];
 
@@ -217,11 +252,7 @@ export default function App() {
         </div>
         <div style={{ textAlign: "right" }}>
           <div
-            style={{
-              fontSize: "22px",
-              color: "#00ff88",
-              letterSpacing: "2px",
-            }}
+            style={{ fontSize: "22px", color: "#00ff88", letterSpacing: "2px" }}
           >
             {time.toLocaleTimeString("fi-FI")}
           </div>
@@ -251,6 +282,40 @@ export default function App() {
           </button>
         </div>
       </div>
+
+      {recentErrors.length > 0 && (
+        <div
+          onClick={() => setActiveTab("logs")}
+          style={{
+            background: "#ff444411",
+            border: "1px solid #ff4444",
+            borderRadius: "8px",
+            padding: "12px 16px",
+            marginBottom: "16px",
+            cursor: "pointer",
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+          }}
+        >
+          <div>
+            <div
+              style={{
+                color: "#ff4444",
+                fontSize: "13px",
+                fontWeight: "bold",
+                letterSpacing: "1px",
+              }}
+            >
+              HUOMIO: {recentErrors.length} VIRHETTA VIIMEISEN 24H AIKANA
+            </div>
+            <div style={{ color: "#aa6666", fontSize: "11px", marginTop: "4px" }}>
+              Klikkaa nahdaksesi lokit
+            </div>
+          </div>
+          <div style={{ color: "#ff4444", fontSize: "20px" }}>{">"}</div>
+        </div>
+      )}
 
       <div
         style={{
@@ -343,9 +408,7 @@ export default function App() {
               >
                 {agent.name}
               </div>
-              <div style={{ fontSize: "10px", color: "#4488aa" }}>
-                {agent.role}
-              </div>
+              <div style={{ fontSize: "10px", color: "#4488aa" }}>{agent.role}</div>
               <div
                 style={{
                   fontSize: "9px",
@@ -587,6 +650,121 @@ export default function App() {
         </div>
       )}
 
+      {activeTab === "logs" && (
+        <div
+          style={{
+            background: "#0a1a2e",
+            borderRadius: "8px",
+            border: "1px solid #00ccff33",
+            overflow: "hidden",
+          }}
+        >
+          {loading ? (
+            <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>
+              Ladataan...
+            </div>
+          ) : logs.length === 0 ? (
+            <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>
+              Ei lokeja viela - agentit kirjaavat tanne suoritukset ja virheet
+            </div>
+          ) : (
+            logs.map((log, i) => {
+              const statusColor =
+                log.status === "error"
+                  ? "#ff4444"
+                  : log.status === "running"
+                  ? "#ffcc00"
+                  : "#00ff88";
+              const agentColor = agentColors[log.agent_name] || "#4488aa";
+              return (
+                <div
+                  key={log.id}
+                  style={{
+                    padding: "12px 16px",
+                    borderBottom:
+                      i < logs.length - 1 ? "1px solid #0a2a4a" : "none",
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "flex-start",
+                    background:
+                      log.status === "error" ? "#ff444408" : "transparent",
+                    flexWrap: "wrap",
+                  }}
+                >
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      color: "#4488aa",
+                      minWidth: "75px",
+                      paddingTop: "2px",
+                    }}
+                  >
+                    {new Date(log.created_at).toLocaleTimeString("fi-FI")}
+                    <div style={{ fontSize: "9px", color: "#2a4a6a" }}>
+                      {new Date(log.created_at).toLocaleDateString("fi-FI")}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: "bold",
+                      color: agentColor,
+                      minWidth: "75px",
+                      paddingTop: "2px",
+                    }}
+                  >
+                    {log.agent_name}
+                  </div>
+                  <div style={{ flex: 1, minWidth: "200px" }}>
+                    <div style={{ fontSize: "12px", color: "#e0f0ff" }}>
+                      {log.action}
+                    </div>
+                    {log.details && (
+                      <div
+                        style={{
+                          fontSize: "10px",
+                          color: "#4488aa",
+                          marginTop: "2px",
+                        }}
+                      >
+                        {log.details}
+                      </div>
+                    )}
+                    {log.error_message && (
+                      <div
+                        style={{
+                          fontSize: "10px",
+                          color: "#ff6666",
+                          marginTop: "4px",
+                          padding: "4px 8px",
+                          background: "#ff444411",
+                          borderRadius: "4px",
+                        }}
+                      >
+                        {log.error_message}
+                      </div>
+                    )}
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      background: statusColor + "22",
+                      color: statusColor,
+                      minWidth: "60px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {log.status}
+                  </div>
+                </div>
+              );
+            })
+          )}
+        </div>
+      )}
+
       {activeTab === "chat" && (
         <div
           style={{
@@ -647,7 +825,7 @@ export default function App() {
           letterSpacing: "2px",
         }}
       >
-        BOATBASE JARVIS v5.1 - HELSINKI, FINLAND - POWERED BY CLAUDE SONNET 4.6
+        BOATBASE JARVIS v5.2 - HELSINKI, FINLAND - POWERED BY CLAUDE SONNET 4.6
       </div>
     </div>
   );
