@@ -21,6 +21,9 @@ const agents = [
   { name: "CLOSER", role: "Huutokaupat", status: "online", color: "#22ddaa" },
   { name: "MATCHMAKER", role: "Sailytystarjoukset", status: "online", color: "#aa88ff" },
   { name: "ANALYST", role: "Paivaraportti", status: "online", color: "#ffaa33" },
+  { name: "CONCIERGE", role: "Tervetulomailit", status: "online", color: "#33ccaa" },
+  { name: "SKIPPER", role: "Vakuutusmuistutukset", status: "online", color: "#ff8844" },
+  { name: "REVIEW-REQUESTER", role: "Arvostelupyynnot", status: "online", color: "#cccc44" },
   { name: "SOCIAL", role: "Somemanageri", status: "building", color: "#ffcc00" },
 ];
 
@@ -37,6 +40,9 @@ const agentColors = {
   CLOSER: "#22ddaa",
   MATCHMAKER: "#aa88ff",
   ANALYST: "#ffaa33",
+  CONCIERGE: "#33ccaa",
+  SKIPPER: "#ff8844",
+  "REVIEW-REQUESTER": "#cccc44",
   SOCIAL: "#ffcc00",
 };
 
