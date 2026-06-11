@@ -17,6 +17,10 @@ const agents = [
   { name: "GUARDIAN", role: "Monitorointi", status: "online", color: "#00ff88" },
   { name: "HERMES", role: "Asiakaspalvelu", status: "online", color: "#00ccff" },
   { name: "SHIELD", role: "Tietoturva", status: "online", color: "#ffcc00" },
+  { name: "NURTURE", role: "Prospekti-seuranta", status: "online", color: "#ff6688" },
+  { name: "CLOSER", role: "Huutokaupat", status: "online", color: "#22ddaa" },
+  { name: "MATCHMAKER", role: "Sailytystarjoukset", status: "online", color: "#aa88ff" },
+  { name: "ANALYST", role: "Paivaraportti", status: "online", color: "#ffaa33" },
   { name: "SOCIAL", role: "Somemanageri", status: "building", color: "#ffcc00" },
 ];
 
@@ -29,6 +33,10 @@ const agentColors = {
   GUARDIAN: "#00ff88",
   HERMES: "#00ccff",
   SHIELD: "#ffcc00",
+  NURTURE: "#ff6688",
+  CLOSER: "#22ddaa",
+  MATCHMAKER: "#aa88ff",
+  ANALYST: "#ffaa33",
   SOCIAL: "#ffcc00",
 };
 
