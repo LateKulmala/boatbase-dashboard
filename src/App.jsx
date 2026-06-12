@@ -57,6 +57,7 @@ export default function App() {
   const [articles, setArticles] = useState([]);
   const [contacts, setContacts] = useState([]);
   const [messages, setMessages] = useState([]);
+  const [socialPosts, setSocialPosts] = useState([]);
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [time, setTime] = useState(new Date());
@@ -89,6 +90,11 @@ export default function App() {
       .from("pending_responses")
       .select("*")
       .order("created_at", { ascending: false });
+    const { data: social } = await supabase
+      .from("social_posts")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
     const { data: logsData } = await supabase
       .from("agent_logs")
       .select("*")
@@ -97,6 +103,7 @@ export default function App() {
     setArticles(arts || []);
     setContacts(conts || []);
     setMessages(msgs || []);
+    setSocialPosts(social || []);
     setLogs(logsData || []);
     setLoading(false);
   }
@@ -220,6 +227,7 @@ export default function App() {
     { id: "overview", label: "ARTIKKELIT" },
     { id: "contacts", label: "CRM" },
     { id: "messages", label: "ASIAKASPALVELU" },
+    { id: "social", label: "SOME" },
     { id: "logs", label: "LOKIT" },
     { id: "chat", label: "JARVIS CHAT" },
   ];
@@ -664,6 +672,97 @@ export default function App() {
                 </div>
               </div>
             ))
+          )}
+        </div>
+      )}
+
+      {activeTab === "social" && (
+        <div
+          style={{
+            background: "#0a1a2e",
+            borderRadius: "8px",
+            border: "1px solid #44bbdd33",
+            overflow: "hidden",
+          }}
+        >
+          {loading ? (
+            <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>
+              Ladataan...
+            </div>
+          ) : socialPosts.length === 0 ? (
+            <div style={{ padding: "20px", textAlign: "center", color: "#4488aa" }}>
+              Ei some-postauksia viela - SOCIAL luo niita ja lahettaa Telegramiin hyvaksyttavaksi
+            </div>
+          ) : (
+            socialPosts.map((post, i) => {
+              const statusColor =
+                post.status === "published"
+                  ? "#00ff88"
+                  : post.status === "approved"
+                  ? "#00ccff"
+                  : post.status === "rejected"
+                  ? "#ff4444"
+                  : post.status === "failed"
+                  ? "#ff8844"
+                  : "#ffcc00";
+              return (
+                <div
+                  key={post.id}
+                  style={{
+                    padding: "12px 16px",
+                    borderBottom:
+                      i < socialPosts.length - 1 ? "1px solid #0a2a4a" : "none",
+                    display: "flex",
+                    gap: "12px",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  {post.image_url && (
+                    <img
+                      src={post.image_url}
+                      alt=""
+                      style={{
+                        width: "64px",
+                        height: "64px",
+                        objectFit: "cover",
+                        borderRadius: "6px",
+                        flexShrink: 0,
+                        border: "1px solid #0a2a4a",
+                      }}
+                    />
+                  )}
+                  <div style={{ flex: 1, minWidth: "200px" }}>
+                    <div
+                      style={{
+                        fontSize: "12px",
+                        color: "#e0f0ff",
+                        marginBottom: "4px",
+                      }}
+                    >
+                      {post.caption && post.caption.substring(0, 140)}
+                      {post.caption && post.caption.length > 140 ? "..." : ""}
+                    </div>
+                    <div style={{ fontSize: "10px", color: "#4488aa" }}>
+                      {(post.platform || "").toUpperCase()} · {post.post_type} ·{" "}
+                      {new Date(post.created_at).toLocaleDateString("fi-FI")}
+                    </div>
+                  </div>
+                  <div
+                    style={{
+                      fontSize: "10px",
+                      padding: "2px 8px",
+                      borderRadius: "4px",
+                      background: statusColor + "22",
+                      color: statusColor,
+                      minWidth: "70px",
+                      textAlign: "center",
+                    }}
+                  >
+                    {post.status}
+                  </div>
+                </div>
+              );
+            })
           )}
         </div>
       )}
