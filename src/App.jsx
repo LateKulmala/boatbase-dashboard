@@ -24,6 +24,8 @@ const agents = [
   { name: "CONCIERGE", role: "Tervetulomailit", status: "online", color: "#33ccaa" },
   { name: "SKIPPER", role: "Vakuutusmuistutukset", status: "online", color: "#ff8844" },
   { name: "REVIEW-REQUESTER", role: "Arvostelupyynnot", status: "online", color: "#cccc44" },
+  { name: "NEWSLETTER", role: "Viikkokooste", status: "building", color: "#44bbdd" },
+  { name: "SELLER NUDGE", role: "Myyjamuistutukset", status: "building", color: "#ffbb55" },
   { name: "SOCIAL", role: "Somemanageri", status: "building", color: "#ffcc00" },
 ];
 
@@ -43,6 +45,8 @@ const agentColors = {
   CONCIERGE: "#33ccaa",
   SKIPPER: "#ff8844",
   "REVIEW-REQUESTER": "#cccc44",
+  NEWSLETTER: "#44bbdd",
+  "SELLER NUDGE": "#ffbb55",
   SOCIAL: "#ffcc00",
 };
 
