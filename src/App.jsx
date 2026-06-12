@@ -10,10 +10,10 @@ const PASSWORD = "boatbase2026";
 
 const agents = [
   { name: "JARVIS", role: "Keskusaivot", status: "online", color: "#00ff88" },
-  { name: "SCOUT", role: "Markkinatutkimus", status: "online", color: "#00ccff" },
+  { name: "SCOUT", role: "Markkinatutkimus", status: "building", color: "#00ccff" },
   { name: "HUNTER", role: "Partnerihankinta", status: "online", color: "#ff9900" },
   { name: "WRITER", role: "Sisallontuotanto", status: "online", color: "#cc44ff" },
-  { name: "REPORTER", role: "Uutisartikkelit", status: "online", color: "#ff44aa" },
+  { name: "REPORTER", role: "Uutisartikkelit", status: "building", color: "#ff44aa" },
   { name: "GUARDIAN", role: "Monitorointi", status: "online", color: "#00ff88" },
   { name: "HERMES", role: "Asiakaspalvelu", status: "online", color: "#00ccff" },
   { name: "SHIELD", role: "Tietoturva", status: "online", color: "#ffcc00" },
