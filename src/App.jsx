@@ -26,7 +26,7 @@ const agents = [
   { name: "REVIEW-REQUESTER", role: "Arvostelupyynnot", status: "online", color: "#cccc44" },
   { name: "NEWSLETTER", role: "Viikkokooste", status: "online", color: "#44bbdd" },
   { name: "SELLER NUDGE", role: "Myyjamuistutukset", status: "online", color: "#ffbb55" },
-  { name: "SOCIAL", role: "Somemanageri", status: "building", color: "#ffcc00" },
+  { name: "SOCIAL", role: "Somemanageri", status: "online", color: "#ffcc00" },
 ];
 
 const agentColors = {
